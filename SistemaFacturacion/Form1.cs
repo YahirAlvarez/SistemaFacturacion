@@ -21,30 +21,77 @@ namespace SistemaFacturacion
         SqlConnection conexion = new SqlConnection("server=DESKTOP-9AO7TKC\\SQLEXPRESS;database=SystemFacturacion; integrated security=true");
         private void btnIniciarSesion_Click(object sender, EventArgs e)
         {
-            conexion.Open();
-            string consulta = "SELECT * FROM Usuarios WHERE Usuario='"+txtUsuario.Text+"'AND Contraseña='"+txtContraseña.Text+"'";
-            SqlCommand comando = new SqlCommand(consulta,conexion);
-            SqlDataReader lector;
-            lector = comando.ExecuteReader();
+            // Verificar las credenciales
+    string consultaLogin = "SELECT COUNT(*) FROM Usuarios WHERE Usuario=@Usuario AND Contraseña=@Contraseña";
 
-            if(lector.HasRows == true)
+            using (SqlCommand comando = new SqlCommand(consultaLogin, conexion))
             {
-                MessageBox.Show("Bienvenido al sistema Alab");
-                this.Hide();
-                Form2 formOpciones = new Form2();
-                formOpciones.Show();
+                comando.Parameters.AddWithValue("@Usuario", txtUsuario.Text);
+                comando.Parameters.AddWithValue("@Contraseña", txtContraseña.Text);
+
+                conexion.Open();
+                int userCount = (int)comando.ExecuteScalar();
+                conexion.Close();
+
+                // Si las credenciales son correctas
+                if (userCount > 0)
+                {
+                    // Verificar si hay un emisor registrado
+                    VerificarEmisor();
+                }
+                else
+                {
+                    MessageBox.Show("Credenciales incorrectas. Intenta de nuevo.");
+                }
             }
-            else
+        }
+
+        private void VerificarEmisor()
+        {
+            // Consulta para verificar si ya existe un emisor
+            string consultaEmisor = "SELECT COUNT(*) FROM Emisor";
+
+            using (SqlCommand comando = new SqlCommand(consultaEmisor, conexion))
             {
-                MessageBox.Show("Usuario o ontraseña incorrectos");
+                conexion.Open();
+                int emisorCount = (int)comando.ExecuteScalar();
+                conexion.Close();
+
+                if (emisorCount == 0)
+                {
+                    // Si no hay emisor, abrir el formulario de registro del emisor
+                    MessageBox.Show("No hay ningún emisor registrado. Debe registrar uno para continuar.");
+                    Form4 formRegistroEmisor = new Form4();
+                    formRegistroEmisor.ShowDialog();
+
+                    // Verificar nuevamente si se ha registrado el emisor
+                    VerificarEmisor(); // Esto permitirá que el usuario registre y luego acceda al menú
+                }
+                else
+                {
+                    // Si ya hay un emisor, se puede acceder al menú principal
+                    MostrarMenuPrincipal();
+                }
             }
-            conexion.Close();
-            
+        }
+
+        private void MostrarMenuPrincipal()
+        {
+            // Abrir el formulario del menú principal
+            Form2 formMenuPrincipal = new Form2();
+            formMenuPrincipal.Show();
+            this.Hide(); // Ocultar el formulario de login
         }
 
         private void btnSalir_Click(object sender, EventArgs e)
         {
-            Close();
+            Close(); //cerar el programa
+        }
+
+        private void btnRegistrar_Click(object sender, EventArgs e)
+        {
+            Form3 formRegistrar = new Form3();
+            formRegistrar.Show(); //mostrar el formulario de registrr
         }
     }
 }

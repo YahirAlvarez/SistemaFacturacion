@@ -37,9 +37,21 @@ namespace SistemaFacturacion
 
         }
 
+        private void lblEstadistica_Click(object sender, EventArgs e)
+        {
+
+        }
+
         private void lblSalir_Click(object sender, EventArgs e)
         {
-            Close();            
+            MessageBox.Show("Saliendo del sistema...");
+            Application.Exit();
+        }
+
+        private void btnEmisores_Click(object sender, EventArgs e)
+        {
+            Form4 formEmisor = new Form4();
+            formEmisor.Show(); //mostrar el formulario de los emisores
         }
     }
 }
